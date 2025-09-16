@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum City {
+  Chandigarh
+  Mohali
+  Zirakpur
+  Panchkula
+  Delhi
+  Mumbai
+  Bangalore
+  Other
+}
+
+enum PropertyType {
+  Apartment
+  Villa
+  Plot
+  Office
+  Retail
+}
+
+enum BHK {
+  ONE     @map("1")
+  TWO     @map("2")
+  THREE   @map("3")
+  FOUR    @map("4")
+  STUDIO  @map("Studio")
+}
+
+enum Purpose {
+  Buy
+  Rent
+}
+
+enum Timeline {
+  ZERO_TO_THREE   @map("0-3m")
+  THREE_TO_SIX    @map("3-6m")
+  MORE_THAN_SIX   @map(">6m")
+  EXPLORING       @map("Exploring")
+}
+
+enum Source {
+  Website
+  Referral
+  Walk_in  
+  Call
+  Other
+}
+
+enum Status {
+  New
+  Qualified
+  Contacted
+  Visited
+  Negotiation
+  Converted
+  Dropped
+}
+
+model Buyer {
+  id           String       @id @default(uuid())
+  fullName     String
+  email        String? 
+  phone        String
+  city         City
+  propertyType PropertyType
+  bhk          BHK? 
+  purpose      Purpose
+  budgetMin    Int?
+  budgetMax    Int?
+  timeline     Timeline
+  source       Source
+  status       Status       @default(New)
+  notes        String? 
+  tags         Json?        
+  ownerId      String
+  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime     @default(now())
+
+  buyerHistory BuyerHistory[]
+}
+
+model BuyerHistory {
+  id        String   @id @default(uuid())
+  buyerId   String
+  changedBy String
+  changedAt DateTime @default(now())
+  diff      Json     // { field: [old, new], ... }
+
+  buyer     Buyer    @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  @@index([buyerId])
+}
